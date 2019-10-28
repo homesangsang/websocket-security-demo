@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>WebSocket-Standard</title>
+</head>
+<content>
+<div>
+    <textarea rows="10" cols="90" id="chat_win"></textarea>
+    <br/>
+    <button id="connect">Connect</button>&nbsp;&nbsp;
+    <button id="disconnect">Disconnect</button>
+    <br/><br/>
+    Message(press Enter to send):
+    <br/>
+    <input id="message" size="90"/>
+</div>
+<script type="text/javascript">
+    var connectBtn = document.getElementById("connect");
+    var disconnectBtn = document.getElementById("disconnect");
+    var chatWin = document.getElementById("chat_win");
+    var message = document.getElementById("message");
+    var ws;
+    connectBtn.onclick = function () {
+        ws = new WebSocket("ws://localhost:9000/echo");
+        //打开事件
+        ws.onopen = function () {
+            chatWin.value = chatWin.value + '\n' + "Socket 已打开";
+            ws.send("这是来自客户端的消息" + location.href + " " + new Date());
+        };
+        //获得消息事件
+        ws.onmessage = function (event) {
+            chatWin.value = chatWin.value + '\n' + event.data;
+        };
+        //关闭事件
+        ws.onclose = function () {
+            chatWin.value = chatWin.value + '\n' + "Socket 已关闭";
+        };
+        //发生了错误事件
+        ws.onerror = function () {
+            chatWin.value = chatWin.value + '\n' + "Socket 发生了错误";
+        }
+    };
+    message.onkeypress = function (event) {
+        if (event.keyCode === 13) {
+            if (ws && WebSocket.OPEN === ws.readyState) {
+                ws.send(JSON.stringify({message: message.value}));
+                message.value = '';
+            }
+        }
+    };
+    disconnectBtn.onclick = function () {
+        if (ws) {
+            ws.close();
+        }
+    }
+</script>
+</content>
+</html>
